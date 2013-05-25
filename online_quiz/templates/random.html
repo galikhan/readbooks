@@ -1,0 +1,17 @@
+{% extends "online-quiz-base.html" %}
+{% block "head" %}
+{{block.super}}
+
+{% endblock %}
+
+{% block "body" %}
+	{% for cl in classes %}
+		<li>{{ cl.number_view }}</li>
+	{% endfor %}
+	{% for q in questions %}
+		<li>{{ q.d_topic_id }} - {{ q.question }}</li>
+	{% endfor %}
+	{% for r in random %}
+		<li>{{ r }}</li>
+	{% endfor %}
+{% endblock %}

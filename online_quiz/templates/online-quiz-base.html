@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+	{% block "head" %}
+	<link href="{{STATIC_URL}}css/bootstrap.min.css" type="text/css" rel="stylesheet" />
+	<script type="text/javascript"	src="{{STATIC_URL}}js/jquery-1.9.0.min.js" > </script>
+	<script type="text/javascript"	src="{{STATIC_URL}}js/bootstrap.min.js" > </script>
+	{% endblock %}
+
+	{% block title %}{% endblock %}
+</head>
+
+	<body>
+		{% block "body" %}
+		{% endblock %}
+	</body>
+
+</html>

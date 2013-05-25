@@ -1,0 +1,39 @@
+{% extends "quiz-base.html" %}
+
+{% block "head" %}
+	<style type="text/css">
+	.variant-style-1, .variant-style-2, .variant-style-3, .variant-style-4{
+		width:10px;
+		height:10px;
+	}
+	/* simple variant */
+	.variant-style-1{
+		background:#DDD;
+	}
+	/* incorrect selected user variant */
+	.variant-style-2{
+		background:red;
+	}
+	/* correct variant */
+	.variant-style-3{
+		background:blue;
+	}
+	/* user selected correct variant */
+	.variant-style-4{
+		background:green;
+	}
+	</style>
+{% endblock %}
+
+{% block "body" %}
+<br>
+{% for k, v in ready_for_print_results.items %}
+	<b>{{ k }}<br>{{ forloop.counter }}.{{ v.question|safe }}</b>
+	<br>
+	{% for vv in v.variants %}
+		<div class="variant-style-{{ vv.type }}"></div>{{ vv.value|safe }}<br>
+	{% endfor %}
+	<br>
+	<br>
+{% endfor %}
+{% endblock %}
