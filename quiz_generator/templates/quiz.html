@@ -1,0 +1,364 @@
+{% extends "quiz-base.html" %}
+
+{% block "head" %}
+
+	{{ block.super }}
+	{# import head from parent #}
+	<link href="{{STATIC_URL}}css/rating/jquery.ui.stars.css" rel ="stylesheet" type="text/css" />
+	<script type="text/javascript" src="{{STATIC_URL}}js/jquery-ui.custom.min.js" ></script>
+	<script type="text/javascript" src="{{STATIC_URL}}js/jquery.uni-form.js" ></script>
+	<script type="text/javascript" src="{{STATIC_URL}}js/jquery.ui.stars.js" ></script>
+
+	<script type="text/javascript" >
+	$(document).ready(function()
+	{
+		$(".span4").scrollspy();
+		makeMeStar();
+		$("#questions-cart").html("{{question_num}}");
+
+		var url = '{% url "typeahead" %}';
+
+		$(".typeahead").typeahead({
+			source : function( query, process )
+			{ 
+				setupAjax(0); 
+				var res = $.post(url,{},function(data){
+					suggestions = [];
+					suggestionIds = {};
+					$.each( data, function( index, value )
+					{
+						suggestions[index] = value;
+						suggestionIds[value] = index;
+					});
+					process(suggestions);//["123","12321313"]
+				},"json");
+			},
+			updater:function(item){alert(suggestionIds[item]);},
+			highligthter:function(item){
+
+			},
+			items : 8,
+			minLength : 1,
+		});
+
+	});
+		function generateQuiz()
+		{
+			var url = "{% url 'generate_quiz' %}";	
+
+			setupAjax(0);
+			var type = $("#load-quiz-type").val();
+			var quizName = $("#quiz-name").val();
+			var quizId = $("#quiz-id").val();
+
+			if( type=="paper-quiz" )
+			{
+				var args = $("#paper-quiz-variants").val();
+			}else if( type=="mve-quiz" )
+			{
+				var args = $("#mve-quiz-variants").val();
+			}else if( type=="online-quiz" )
+			{
+				var args = $("#online-quiz-grade").val();
+			}
+
+			$.post( url, {"name":quizName, "quiz-id":quizId, "type":type, "args":args }, function(data){
+				$("#questions-cart").html(data.question_num);
+				$("#quiz-id").attr('value', data.quiz_id );
+			}, "json" );
+		}
+
+		function createNewQuiz(){
+			var url = "{% url 'create_new_quiz' %}";	
+			setupAjax(0);
+			var quizId = $("#quiz-id").val();
+
+			$.post( url, {"current-quiz-id":quizId}, function(data){
+				$("#questions-cart").html(data.question_num);
+				$("#quiz-id").attr('value', data.quiz_id );
+			}, "json" );
+		}
+		function loadQuizType()
+		{
+			var type = $("#load-quiz-type").val();
+
+			$("#mve-quiz-type").attr("class","inactive-type");
+			$("#online-quiz-type").attr("class","inactive-type");
+			$("#paper-quiz-type").attr("class","inactive-type");
+
+			if( type=="paper-quiz" ){
+				$("#paper-quiz-type").attr("class","active-type");
+			}else if( type=="mve-quiz" ){
+				$("#mve-quiz-type").attr("class","active-type");
+			}else if( type=="online-quiz" ){
+				$("#online-quiz-type").attr("class","active-type");
+			}
+		}
+		function addRemove(questionId)
+		{
+			var url = "{% url 'addremove' %}";	
+			setupAjax(0);
+			//var addRemove = $("#add-remove-"+questionId).val();
+			var quizId = $("#quiz-id").val();//id of old or new quiz
+
+			$.post( url, { "quiz-id":quizId,"question-id":questionId }, function(data){
+				//alert(data.quiz_id+" - "+data.question_num);
+				$("#questions-cart").html(data.question_num);
+				$("#quiz-id").attr('value', data.quiz_id );
+
+			}, "json" );
+		}
+		function showSubtopics(topicId)
+		{
+			$(".subtopic-"+topicId).css("display","block");
+			var prevTopic = $("#active-topic").val();
+			if ( topicId != prevTopic ){
+				$(".subtopic-"+prevTopic).css("display","none");
+			}
+
+			$("#active-topic").attr( "value", topicId );	
+		}
+		function makeMeStar()
+		{
+			$(".rating-stars").children().not(":radio").hide();
+			$(".rating-stars").stars({
+				callback: function(ui, type, value)
+				{
+					//	alert(value);
+					var valId = value.split(":");
+					var ratingValue = valId[0];
+					var qid = valId[1];//id of question
+					//alert("ratingValue : "+ratingValue+" | valid : "+valId)	;
+					var nocomment = 'nocomment';					
+
+					$("#ajax-response-"+qid).html("<label style='font-size:12px;font-style: italic;' >commentsLeave :</label><textarea id='comment-"+qid+"' style='width:340px' ></textarea><button  class='c-button' onclick='sendResult("+ratingValue+", "+qid+", 1)'>save</button>");
+				}
+			 });
+		}
+		function csrfSaveMethod( method ){
+			return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+		}
+		function setupAjax( questionId )
+		{
+			if (questionId == 0){
+				var csrf = $("#csrf").val();
+			}else{
+				var csrf = $("#csrf-"+questionId).val();
+			}
+			$.ajaxSetup({
+				crossdomain : false,
+				beforeSend : function(xhr, settings){
+					if(!csrfSaveMethod(settings.type)){
+						xhr.setRequestHeader("X-CSRFToken", csrf);	
+					}
+				}	
+			});
+		}
+		function sendResult( value, questionId, type )
+		{
+			//disable rating buttons in order to eliminate double click	
+			//$(".c-button").attr("disabled",true);
+			setupAjax(questionId);
+			var comment = $("#comment-"+questionId).val();
+			var url = "{% url "save_rating" %}";
+			var poster = $.post( url , {"type":type, rate: value, "q-id" : questionId, "comment": comment }, 
+				function(data)
+				{
+					if(data.insert){
+
+						//alert(data.comment_whole);
+						$("#ajax-response-"+questionId).html(data.rating);
+						$("#"+questionId).hide();
+						$("#question-comments-"+questionId).append(data.comment_whole);
+					}
+				},"json");
+			poster.done(function(){ /*  enable rating buttons */$(".c-button").attr("disabled",false); });
+
+		}
+		function deleteComment(id)
+		{
+			if(confirm('Delete this comment ?')){	
+				$.post("../rating/manage_comment.php", {"id":id},	 
+				function(data){
+					if(data == true){	
+						$("#comment-"+id).hide();
+					}else {
+						alert("Problems on server,Cant delete row!"); 
+					} 
+				}, "json");
+			}
+		}
+
+	</script>
+	<style type="text/css">
+	.subtopics-list{
+		width:100%;
+		padding-left: 33px;
+	}
+	.active-type{
+		display:block;
+	}
+	.inactive-type{
+		display:none;
+	}
+	.span4{
+		height: 600px;
+	}
+	</style>
+{% endblock %}
+{% block "body" %}
+<a href="{% url 'list_topics' %}" >Questions</a>
+<hr>
+<!--<input type="text" class="typeahead" data-provide="typeahead" autocomplete="off" />
+-->
+<input type="hidden" id="quiz-id" value="{{ quiz_id }}" />
+
+<div class="row">
+	<input type="hidden" id = "csrf" value="{{ csrf_token }}" />
+	<input type="hidden" id = "active-topic" value="0" />
+	<div class="span4" style="overflow:scroll"> 
+	{% for grade in tws %}
+		<b>{{grade.number_view}}-grade</b><br>
+		{% for topic in grade.topics %}
+			<i class="btn btn-link" onclick="showSubtopics({{topic.id}})" >{{ forloop.counter }}.{{topic.topic}}</i>{{topic.total_questions_amount}}.<br>
+			<div class="subtopic-{{topic.id}}" style="display:none">
+				{% for subtopic in topic.subtopics %}
+					<i><a href="{% url 'list_questions' topic.id subtopic.id %}" style="color:GREY">{{ forloop.counter }}.{{ subtopic.name }}</a>&nbsp;&nbsp;{{ subtopic.number_of_questions }}.</i><br>
+				{% endfor %}
+			</div>
+		{% endfor %}
+	{% endfor %}
+	</div>
+
+	<div class="span6">
+
+	<p>{{ questions|length }} - questions</p>
+	{% for question in questions %}
+			Type: {{ question.d_q_type.short_name }}<br>
+			Question:{{ question.question|safe }}
+
+			{% if question.meta == 'variants' %}
+				Variants:<br>
+				{%  for variant in question.variants %}
+					{{forloop.counter}}-{{ variant.name|safe }}
+					<hr>
+				{% endfor %}	
+				Answers:<br>
+				{%  for answer in question.variant_answers %}
+					{{ answer.view_order|safe }}){{ answer.name|safe }}<br>
+				{% endfor %}	
+				<br>
+			{% elif question.meta == 'mappings' %}
+				Mappings:<br>
+				{%  for mappings in question.mappings %}
+					{{ mappings.ket_value|safe }}&nbsp;&nbsp;
+					{{ mappings.wrong_value|safe }}&nbsp;&nbsp;
+					{{ mappings.right_value|safe }}<br>
+				{% endfor %}	
+			{% else %}	
+				Solution:{{ question.solution }}<br>
+				Answer:{{ question.answer }}<br>
+			{% endif %}
+		</br>
+			<input type ="button" class ="btn" onclick="addRemove({{question.id}})" value="add" id="add-remove-{{ question.id }}" />
+			<br>
+			{% if question.allow_rating %}
+			<div  class="pageBody">
+				<div>
+				<form class="rating-stars" id="{{question.id}}" method="post">
+					<input type="hidden" id = "csrf-{{question.id}}" value="{{ csrf_token }}" />
+
+ 					<input type="radio" name="rate" value="1" title="Poor" id="rate1" /> 
+						<label for="rate1">Poor</label><br />
+					<input type="radio" name="rate" value="2" title="Fair" id="rate2" /> 
+						<label for="rate2">Fair</label><br />
+					<input type="radio" name="rate" value="3" title="Average" id="rate3" /> 
+						<label for="rate3">Average</label><br />
+					<input type="radio" name="rate" value="4" title="Good" id="rate4" /> 
+						<label for="rate4">Good</label><br />
+					<input type="radio" name="rate" value="5" title="Excellent" id="rate5" /> 
+						<label for="rate5">Excellent</label><br />
+					<input type = "hidden" value="5" id="max_value" />
+				</form>
+				</div>
+			</br>
+				<label>Rating:</label>
+				<div id='ajax-response-{{question.id}}' style='width:160px;'>Not rated.</div>
+			</div>
+			{% else %}
+				<label>Rating:</label>{{ question.rating }}
+			{% endif %}
+			<div id="question-comments-{{question.id}}">
+				<label>Comments:</label>
+				{% for comment in question.user_comments %}
+					<p>{{comment.comment}}</p>
+				{% endfor %}
+			</div>
+
+		</br>
+	{% endfor %}
+		<div class="pagination">
+			<ul>
+			{% for page in pages %}
+				{% ifequal forloop.counter index %}
+					<li class="active" ><a href={% url "list_questions_by_page" topic_id subtopic_id page %}> {{page}}</a></li>
+				{% else %}
+					<li><a href={% url "list_questions_by_page" topic_id subtopic_id page %}> {{page}}</a></li>
+				{% endifequal %}
+			{% endfor %}
+			</ul>
+		</div>
+	</div>
+
+	<div class="span2">
+		<b>Questions Cart </b>
+		<br>
+		<p><b id="questions-cart">0</b>&nbsp;&nbsp;question(s)</p>	
+		<button class="btn" onclick="createNewQuiz()">clean cart...</button>
+		<hr>
+		<br>
+		Name:<input type="text" id="quiz-name" >
+		Questions:<br>
+		<select onchange="loadQuizType()" id="load-quiz-type" >
+			<option value="paper-quiz" >Paper Quiz</option>
+			<option value="online-quiz" >Online Quiz</option>
+			<option value="mve-quiz" >MVE Quiz</option>
+		</select>
+		<div id ="quiz-types">
+			<div id ="paper-quiz-type" class="active-type" >
+				Number of variants:
+				<select id="paper-quiz-variants" >
+					<option value="2" >2</option>
+					<option value="4" >4</option>
+					<option value="6" >6</option>
+					<option value="8" >8</option>
+					<option value="10" >10</option>
+				</select>
+				<button class ="btn" onclick="generateQuiz()">generate</button>
+			</div>
+
+			<div id ="online-quiz-type" class="inactive-type" >
+				Select grade:
+				<select id="online-quiz-grade" >
+					<option value="6" >6</option>
+					<option value="7" >7</option>
+					<option value="8" >8</option>
+					<option value="9" >9</option>
+					<option value="10" >10</option>
+					<option value="11" >11</option>
+				</select>
+				<button class="btn"  onclick="generateQuiz()">save</button>
+			</div>
+			<div id ="mve-quiz-type" class="inactive-type">
+				Number of variants:
+				<select id="mve-quiz-variants" >
+					<option value="2" >2</option>
+					<option value="3" >3</option>
+					<option value="4" >4</option>
+				</select>
+				<button type ="button" data-loading-text="123123" onclick="alert('asd')" class="btn btn-primary" >generate</button>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
