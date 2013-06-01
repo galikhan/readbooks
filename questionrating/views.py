@@ -89,3 +89,28 @@ def save_question_rating(request):
 
 	return HttpResponse("save q")
 
+
+def count_user_rate_amount(request):
+
+	user_rates = {}
+	questions = SbQuestions.objects.using('katev').filter( year_id = 2 )
+
+
+	#return HttpResponse(questions)
+	#tids = SbQuestions.objects.using('')
+	for question in questions:
+		
+		value  = question["sbquestionrating__rate_value"]
+		amount = question["sbquestionrating__rate_amount"]		
+		try:
+			user_rates[ question.teacher_id ].append(question.id)
+		except KeyError:
+			user_rates[ question.teacher_id ] = []
+			user_rates[ question.teacher_id ].append(question.id)
+			pass	
+
+	for k, v in user_rates.iteritems():
+		otherrate = SbQuestionRating.objects.using('katev').filter( question_id__in = v )			
+
+#	return HttpResponse(user_rates)		
+	return render(request, "userrate.html", { "userrate": user_rates })

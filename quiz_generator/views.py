@@ -15,11 +15,10 @@ def topics_with_subtopics(user_branch):
 
 #	user_branch = request.session.__getitem__("branch")
 #	user_branch = 1
-
 	grade_class = SbClass.objects.using('katev').all().order_by("number_view")
 	for grade in grade_class:
 
-		topics = grade.sbtopicslist_set.filter(class_field = grade.id, branch = user_branch).order_by("class_field__number_view", "quarter")
+		topics = grade.sbtopicslist_set.filter( class_field = grade.id, branch = user_branch ).order_by("class_field__number_view", "quarter")
 		for t in topics:
 			subtopics = t.sbsubtopicslist_set.filter(topic=t.id)
 			question_num = 0
@@ -62,21 +61,21 @@ def list_questions( request, topic_id, subtopic_id ):
 	user = request.session.__getitem__("uname")
 	user_branch = request.session.__getitem__("branch")
 	
-	tws = topics_with_subtopics( user_branch )
+	#tws = topics_with_subtopics( user_branch )
 	questions = gather_questions( topic_id, subtopic_id, user )
 	index = 1
 	page, pages = paginate( index, questions )		
-	quiz_id, question_num = check_quiz( user )
+	#quiz_id, question_num = check_quiz( user )
 
 	return render(request, "quiz.html",  
-		{ "tws":tws, 
+		{ 
 		"questions":page, 
 		"pages" : pages, 
 		"index": int(index), 
 		"topic_id":topic_id, 
 		"subtopic_id" : subtopic_id,
 		"quiz_id":quiz_id,
-		"question_num":question_num,
+		#"question_num":question_num,
 		})
 
 def list_topics(request):
@@ -99,7 +98,7 @@ def create_new_quiz(request):
 		user = request.session.__getitem__("uname")
 
 		#must delete all bindings
-		QuizList.objects.get(id = request.POST['current-quiz-id']).delete()
+		QuizList.objects.get(  id = request.POST['current-quiz-id'] ).delete()
 
 		quizlist = QuizList()
 		quizlist.user = user
@@ -158,6 +157,7 @@ def generate_quiz( request ):
 def gather_questions( topic_id, subtopic_id, user ):
 
 	# set by 20 questions on each page for now will be 1
+
 	questions = SbQuestions.objects.using('katev').filter( d_subtopic_id = subtopic_id )
 
 	for question in questions:
@@ -254,6 +254,4 @@ def count_questions(request):
 		sub.number_of_questions = questions_count
 		sub.save()
 		#print sub.name , questions
-
-
-				
+	return HttpResponse("hello")
