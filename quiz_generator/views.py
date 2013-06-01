@@ -7,6 +7,7 @@ from django.core import serializers
 import simplejson, datetime
 
 def simplehead(request):
+	moi = "izmeneniya"
 	a = "asdfasdf"
 	
 	return HttpResponse("adfadsf")
