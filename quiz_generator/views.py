@@ -252,10 +252,6 @@ def count_questions(request):
 		sub.number_of_questions = questions_count
 		sub.save()
 		#print sub.name , questions
-<<<<<<< HEAD
+
 	return HttpResponse("hello")
-=======
 
-
-				
->>>>>>> f8da2212757c7d5f358239db224ca386862c22d3
