@@ -13,19 +13,6 @@ def typeahead(request):
 
 def topics_with_subtopics(user_branch):
 
-<<<<<<< HEAD
-#	user_branch = request.session.__getitem__("branch")
-#	user_branch = 1
-	grade_class = SbClass.objects.using('katev').all().order_by("number_view")
-	for grade in grade_class:
-
-		topics = grade.sbtopicslist_set.filter( class_field = grade.id, branch = user_branch ).order_by("class_field__number_view", "quarter")
-		for t in topics:
-			subtopics = t.sbsubtopicslist_set.filter(topic=t.id)
-			question_num = 0
-			for subtopic in subtopics:
-				question_num += subtopic.number_of_questions
-=======
 	grade_class = SbClass.objects.using('katev').all().order_by("number_view")
 	for grade in grade_class:
 
@@ -35,7 +22,6 @@ def topics_with_subtopics(user_branch):
 #			question_num = 0
 #			for subtopic in subtopics:
 #				question_num += subtopic.number_of_questions
->>>>>>> f8da2212757c7d5f358239db224ca386862c22d3
 
 #			t.subtopics = subtopics
 #			t.total_questions_amount = question_num
