@@ -1,6 +1,7 @@
-#import os, sys
-#sys.path.append('/home/katevkz/public_html/readbooks')
+import os, sys
+sys.path.append('/home/katevkz/public_html/readbooks')
 
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "readbooks.settings")
 
 from django.core.management.base import BaseCommand,CommandError
 from questionrating.models import *
@@ -11,9 +12,7 @@ class Command(BaseCommand):
 		
 		#Number of teachers that made rating for this question[cant be zero]
 		rated_people = 3
-
 		#Average amount of rating for this question [1-5]
-		#if question rate less than 2.5 it will be deleted
 		rate_min = 2.5
 
 		#First step notify users for 2 week left to delete bad questions
@@ -26,11 +25,17 @@ class Command(BaseCommand):
 
 
 		#First step notify users for today will delete bad questions
+		#1 day
 		timedelta = 1	
 		trash = perform_calculation(timedelta, rated_people, rate_min)
+		
+		all = SbQuestions.objects.using('katev').all()
+		count_all = all.count() 
+		
 		amount = trash.__len__()
-	#	BadQuestionStats.objects.create(amount = amount).save()	
-		delete = SbQuestions.objects.using("katev").filter(id__in=trash).delete()	
+
+		BadQuestionStats.objects.create(amount = count_all, deleted_amount = amount ).save()	
+#		delete = SbQuestions.objects.using("katev").filter(id__in=trash).delete()	
 
 #	return render(request, "qr-index.html", {"trash": trash, "delete":delete },)
 			

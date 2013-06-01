@@ -93,7 +93,7 @@ def run_online( request, quiz_id, tracker_id ):
 				"total_qnum":question_number,
 				"disable_button":disable_button,
 				"stream_state":stream_state,
-				"variants": [str(variant.name) for variant in variants], 
+				"variants": [ variant.name.encode('utf-8') for variant in variants], 
 				"variant_ids": [str(variant.id) for variant in variants], 
 				"checked_variants" : [str(variant) for variant in mod_variants], 
 				"question": question , 
