@@ -7,6 +7,8 @@ from django.core import serializers
 import simplejson, datetime
 
 def simplehead(request):
+	a = "asdfasdf"
+	
 	return HttpResponse("adfadsf")
 
 def typeahead(request):
