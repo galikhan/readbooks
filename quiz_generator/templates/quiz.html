@@ -16,7 +16,7 @@
 		makeMeStar();
 		$("#questions-cart").html("{{question_num}}");
 
-		var url = '{% url "typeahead" %}';
+		var url = '{# url "typeahead" #}';
 
 		$(".typeahead").typeahead({
 			source : function( query, process )

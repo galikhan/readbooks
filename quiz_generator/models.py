@@ -19,6 +19,7 @@ class QuestionCart(models.Model):
     question = models.IntegerField()
 
 
+
 class SbTopicsList(models.Model):
 
     quarter = models.IntegerField(db_column="id_quarter")
@@ -134,10 +135,10 @@ class SbQuestionType(models.Model):
 
 
 
-
+"""
 
 ###
-"""
+
 class SbQuestionCounter(models.Model):
     id = models.IntegerField(primary_key=True)
     branch_id = models.IntegerField()
