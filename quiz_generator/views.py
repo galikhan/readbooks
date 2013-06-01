@@ -9,6 +9,7 @@ import simplejson, datetime
 def simplehead(request):
 	moi = "izmeneniya"
 	a = "asdfasdf"
+	server= "izmemniua"
 	
 	return HttpResponse("adfadsf")
 
