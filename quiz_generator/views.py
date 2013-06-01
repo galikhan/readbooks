@@ -6,6 +6,9 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core import serializers
 import simplejson, datetime
 
+def simplehead(request):
+	return HttpResponse("adfadsf")
+
 def typeahead(request):
 	array = ['gali', 'gattuso', 'gattaka']
 	json = simplejson.dumps(array)
