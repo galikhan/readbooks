@@ -6,7 +6,9 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core import serializers
 import simplejson, datetime
 
+
 def simplehead(request):
+	moii = "iz"
 	moi = "izmeneniya"
 	a = "asdfasdf"
 	server= "izmemniua"
