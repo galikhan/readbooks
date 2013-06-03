@@ -12,7 +12,7 @@ def simplehead(request):
 	moi = "izmeneniya"
 	a = "asdfasdf"
 	server= "izmemniua"
-	
+	server2 = ""
 	return HttpResponse("adfadsf")
 
 def typeahead(request):
