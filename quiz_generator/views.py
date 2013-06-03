@@ -164,7 +164,6 @@ def generate_quiz( request ):
 def gather_questions( topic_id, subtopic_id, user ):
 
 	# set by 20 questions on each page for now will be 1
-
 	questions = SbQuestions.objects.using('katev').filter( d_subtopic_id = subtopic_id )
 
 	for question in questions:
@@ -198,9 +197,9 @@ def gather_questions( topic_id, subtopic_id, user ):
 
 	return questions		
 
-def paginate(index, questions):
+def paginate(index, questions, amount):
 
-	paginator = Paginator( questions, 5 )
+	paginator = Paginator(questions, amount)
 	try:
 		page = paginator.page(index) 
 	except PageNotAnInteger:
@@ -264,3 +263,84 @@ def count_questions(request):
 
 	return HttpResponse("hello")
 
+def load_subtopics(request):
+	#data = SortedDict()
+	data = []
+	if request.is_ajax():
+		topic_id = request.POST['topic-id']
+		subtopics = SbSubtopicsList.objects.using('katev').filter( topic = topic_id ).order_by("name")		
+		for subtopic in subtopics:
+			data.append({ "id":subtopic.id, "name":subtopic.name, "num":subtopic.number_of_questions })
+
+
+	json = simplejson.dumps(data)	
+	return HttpResponse(json, "application/json")	
+
+def gather_questions2( questions, user ):
+
+	data = []
+	values = {}
+	for question in questions:
+
+		values['question'] = question.question
+		values['solution'] = question.solution
+		qtype = question.d_q_type.short_name
+		try:
+			rate_object = SbQuestionRating.objects.using('katev').get( question = question ) 	
+			rating = round(float(rate_object.rate_value) / rate_object.rate_amount, 2)
+		except SbQuestionRating.DoesNotExist:	
+			rating = 0.0
+			pass
+		values['rating'] = rating
+
+		try:
+			user_comments = SbRatedBy.objects.using('katev').filter( question = question ).order_by("-id")[:3]
+			user_ratings = SbRatedBy.objects.using('katev').get( question = question, user_id = user )
+			allow_rating=False
+		except:
+			allow_rating=True
+			pass
+		values['allow_rating'] = allow_rating
+		#values['user_comments'] = user_comments
+
+		if qtype == 'single_answer' or qtype == 'multiple_answer' or qtype == 'true_false':
+			question.meta = 'variants'
+			variants = question.sbvariants_set.all().order_by("id")
+			variant_answers = question.sbanswers_set.all().order_by("view_order")
+
+			meta = 'variants'
+			type_value = variants
+			type_answer = variant_answers
+
+		elif qtype == 'mappings':
+			meta = 'mappings'
+			type_value = question.sbquestionmappings_set.all().order_by("id")
+		else:
+			meta = 'other'
+			question.meta = 'other'
+			type_value = ""
+
+		values['meta'] = meta
+		#values['type_value'] = type_value
+		#values['type_answer'] = type_answer
+
+		data.append(values)	
+	return data	
+
+def load_questions(request):
+	data=[]
+	user = request.session.__getitem__('uname')
+
+	if request.is_ajax():
+		topic_id = request.POST['topic-id']
+		subtopic_id = request.POST['subtopic-id']
+		page_index = request.POST['page-index']
+
+		amount = 3
+		questions = SbQuestions.objects.using('katev').filter( d_subtopic_id = subtopic_id )
+		page,pages = paginate(page_index ,questions, amount)
+		questions = gather_questions2(questions, user)
+
+	json = simplejson.dumps(questions)	
+	return HttpResponse(json, "application/json")	
+	

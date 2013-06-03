@@ -189,6 +189,54 @@
 			}
 		}
 
+	function loadSubtopics(topicId)
+	{
+		setupAjax(0);
+		var url = "{% url 'load_subtopics' %}";
+		var poster = $.post( url ,
+		{ "topic-id":topicId }, 
+		function(data)
+		{
+			if (data.length > 0)
+			{
+				html = "<ul>";
+				$.each( data, function(index, value)
+				{
+					link = "<a href='javascript:void(0)' onclick=loadQuestions("+topicId+","+value.id+")>"+value.name+"</a>";
+					html = html + "<li>"+link+" {"+value.num+"}</li>";		
+				});	
+				html += "</ul>";
+				$("#subtopic-"+topicId).html(html);
+			}else{
+				$("#subtopic-"+topicId).html("There is no subtopics.");
+			}	
+		},"json");
+		poster.done(function(){ /*  enable rating buttons */$(".c-button").attr("disabled",false); });
+	}
+	function loadQuestions(topicId, subtopicId)
+	{
+		setupAjax(0);
+		var url = "{% url 'load_questions' %}";
+		var poster = $.post( url ,
+		{ "topic-id":topicId, "subtopic-id":subtopicId, "page-index":1,  }, 
+		function(data)
+		{
+			if (data.length > 0)
+			{
+				html = "<ul>";
+				$.each( data, function(index, value)
+				{
+					link = value.question;
+					html = html + "<li>"+link+"</li>";		
+				});	
+				html += "</ul>";
+				$("#questions").html(html);
+			}else{
+				$("#questions").html("There is no subtopics.");
+			}	
+		},"json");
+		poster.done(function(){ /*  enable rating buttons */$(".c-button").attr("disabled",false); });
+	}
 	</script>
 	<style type="text/css">
 	.subtopics-list{
@@ -220,20 +268,16 @@
 	{% for grade in tws %}
 		<b>{{grade.number_view}}-grade</b><br>
 		{% for topic in grade.topics %}
-			<i class="btn btn-link" onclick="showSubtopics({{topic.id}})" >{{ forloop.counter }}.{{topic.topic}}</i>{{topic.total_questions_amount}}.<br>
-			<div class="subtopic-{{topic.id}}" style="display:none">
-				{% for subtopic in topic.subtopics %}
-					<i><a href="{% url 'list_questions' topic.id subtopic.id %}" style="color:GREY">{{ forloop.counter }}.{{ subtopic.name }}</a>&nbsp;&nbsp;{{ subtopic.number_of_questions }}.</i><br>
-				{% endfor %}
-			</div>
+			<i class="btn btn-link" onclick="loadSubtopics({{topic.id}})" >{{ forloop.counter }}.{{topic.topic}}</i>{{topic.total_questions_amount}}.<br>
+			<div id="subtopic-{{topic.id}}"></div>
 		{% endfor %}
 	{% endfor %}
 	</div>
 
 	<div class="span6">
-
-	<p>{{ questions|length }} - questions</p>
-	{% for question in questions %}
+		<div id="questions"></div>
+		<p>{{ questions|length }} - questions</p>
+		{% for question in questions %}
 			Type: {{ question.d_q_type.short_name }}<br>
 			Question:{{ question.question|safe }}
 
@@ -259,44 +303,43 @@
 				Solution:{{ question.solution }}<br>
 				Answer:{{ question.answer }}<br>
 			{% endif %}
-		</br>
-			<input type ="button" class ="btn" onclick="addRemove({{question.id}})" value="add" id="add-remove-{{ question.id }}" />
-			<br>
-			{% if question.allow_rating %}
-			<div  class="pageBody">
-				<div>
-				<form class="rating-stars" id="{{question.id}}" method="post">
-					<input type="hidden" id = "csrf-{{question.id}}" value="{{ csrf_token }}" />
+			</br>
+				<input type ="button" class ="btn" onclick="addRemove({{question.id}})" value="add" id="add-remove-{{ question.id }}" />
+				<br>
+				{% if question.allow_rating %}
+				<div  class="pageBody">
+					<div>
+					<form class="rating-stars" id="{{question.id}}" method="post">
+						<input type="hidden" id = "csrf-{{question.id}}" value="{{ csrf_token }}" />
 
- 					<input type="radio" name="rate" value="1" title="Poor" id="rate1" /> 
-						<label for="rate1">Poor</label><br />
-					<input type="radio" name="rate" value="2" title="Fair" id="rate2" /> 
-						<label for="rate2">Fair</label><br />
-					<input type="radio" name="rate" value="3" title="Average" id="rate3" /> 
-						<label for="rate3">Average</label><br />
-					<input type="radio" name="rate" value="4" title="Good" id="rate4" /> 
-						<label for="rate4">Good</label><br />
-					<input type="radio" name="rate" value="5" title="Excellent" id="rate5" /> 
-						<label for="rate5">Excellent</label><br />
-					<input type = "hidden" value="5" id="max_value" />
-				</form>
+	 					<input type="radio" name="rate" value="1" title="Poor" id="rate1" /> 
+							<label for="rate1">Poor</label><br />
+						<input type="radio" name="rate" value="2" title="Fair" id="rate2" /> 
+							<label for="rate2">Fair</label><br />
+						<input type="radio" name="rate" value="3" title="Average" id="rate3" /> 
+							<label for="rate3">Average</label><br />
+						<input type="radio" name="rate" value="4" title="Good" id="rate4" /> 
+							<label for="rate4">Good</label><br />
+						<input type="radio" name="rate" value="5" title="Excellent" id="rate5" /> 
+							<label for="rate5">Excellent</label><br />
+						<input type = "hidden" value="5" id="max_value" />
+					</form>
+					</div>
+				</br>
+					<label>Rating:</label>
+					<div id='ajax-response-{{question.id}}' style='width:160px;'>Not rated.</div>
+				</div>
+					{% else %}
+					<label>Rating:</label>{{ question.rating }}
+				{% endif %}
+				<div id="question-comments-{{question.id}}">
+					<label>Comments:</label>
+					{% for comment in question.user_comments %}
+						<p>{{comment.comment}}</p>
+					{% endfor %}
 				</div>
 			</br>
-				<label>Rating:</label>
-				<div id='ajax-response-{{question.id}}' style='width:160px;'>Not rated.</div>
-			</div>
-			{% else %}
-				<label>Rating:</label>{{ question.rating }}
-			{% endif %}
-			<div id="question-comments-{{question.id}}">
-				<label>Comments:</label>
-				{% for comment in question.user_comments %}
-					<p>{{comment.comment}}</p>
-				{% endfor %}
-			</div>
-
-		</br>
-	{% endfor %}
+		{% endfor %}
 		<div class="pagination">
 			<ul>
 			{% for page in pages %}

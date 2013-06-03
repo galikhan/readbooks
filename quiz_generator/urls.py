@@ -8,4 +8,7 @@ urlpatterns = patterns("",
 	url(r'^add-remove-questions/$', "quiz_generator.views.add_remove_questions_to_cart", name="addremove" ),
 	url(r'^create-new-quiz/$', "quiz_generator.views.create_new_quiz", name="create_new_quiz" ),
 	url(r'^generate-quiz/$', "quiz_generator.views.generate_quiz", name="generate_quiz" ),
+	url(r'^subtopics/$', "quiz_generator.views.load_subtopics", name="load_subtopics" ),
+	url(r'^questions/$', "quiz_generator.views.load_questions", name="load_questions" ),
+
 	)
