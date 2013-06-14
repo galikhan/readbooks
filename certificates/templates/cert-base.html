@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+	{% block "head" %}
+	<link href="{{STATIC_URL}}css/bootstrap.min.css" type="text/css" rel="stylesheet" />
+	<script type="text/javascript"	src="{{STATIC_URL}}js/jquery-1.9.0.min.js" > </script>
+	<script type="text/javascript"	src="{{STATIC_URL}}js/bootstrap.min.js" > </script>
+	{% endblock %}
+
+	{% block title %}{% endblock %}
+</head>
+
+	<body>
+		<div class="navbar">
+			<div class ="navbar-inner">
+				<ul class="nav">
+					{% for lesson in lessons %}
+						<li><a href={% url lesson %} >{{ lesson }}</a></li>
+					{% endfor %}
+					<li><a href={% url "cert_list" 16 %}>download</a></li>
+					<li><a href={% url "logout" %}>logout</a></li>
+				</ul>
+			</div>
+		</div>	
+		<br>
+		{% block "body" %}
+		{% endblock %}
+	</body>
+
+</html>
