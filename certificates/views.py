@@ -21,7 +21,7 @@ def list_computer(request):
 
 	school = request.session.__getitem__("school")
 	school = school_id_converter(school)	
-	students = Students.objects.using('katev_full').filter( school_id = school, class_field = 11 )
+	students = Students.objects.using('katev').filter( school_id = school, class_field = 11 )
 	lessons = ["computer", "english", "turkish"]
 
 	return render(request, "studentlist.html",{ "students": students , "lessons": lessons, "type":"computer" })
@@ -31,7 +31,7 @@ def list_english(request):
 
 	school = request.session.__getitem__("school")
 	school = school_id_converter(school)	
-	students = Students.objects.using('katev_full').filter( school_id = school , class_field = 11 )
+	students = Students.objects.using('katev').filter( school_id = school , class_field = 11 )
 	level = EnglishLevel.objects.all()
 	certified = 0
 	for student in students:
@@ -52,7 +52,7 @@ def list_turkish(request):
 	school = request.session.__getitem__("school")
 	school = school_id_converter(school)	
 	level = TurkishLevel.objects.all()
-	students = Students.objects.using('katev_full').filter( school_id = school , class_field = 11 )
+	students = Students.objects.using('katev').filter( school_id = school , class_field = 11 )
 
 	certified = 0
 	for student in students:
@@ -108,7 +108,7 @@ def print_computer(request):
 	name = "computer-"+school+"-"+date+".pdf"
 	homepath = "/home/galikhan/www/readbooks/certificates"
 
-	students = Students.objects.using('katev_full').filter( school_id = school, class_field = 11 )
+	students = Students.objects.using('katev').filter( school_id = school, class_field = 11 )
 	path = settings.MEDIA_ROOT+"certificates/"+name
 	c = canvas.Canvas( path, pagesize = A4 )
 	heigth, width = A4
@@ -135,7 +135,7 @@ def print_turkish(request):
 	name = "tukish-"+school+"-"+date+".pdf"
 	homepath = "/home/galikhan/www/readbooks/certificates"
 
-	students = Students.objects.using('katev_full').filter( school_id = school, class_field = 11 )
+	students = Students.objects.using('katev').filter( school_id = school, class_field = 11 )
 	studentid = []
 	for student in students:
 		studentid.append(student.student_id)
@@ -178,7 +178,7 @@ def print_english(request):
 	name = "english-"+school+"-"+date+".pdf"
 	homepath = "/home/galikhan/www/readbooks/certificates"
 
-	students = Students.objects.using('katev_full').filter( school_id = school, class_field = 11 )
+	students = Students.objects.using('katev').filter( school_id = school, class_field = 11 )
 	studentid = []
 	for student in students:
 		studentid.append(student.student_id)
@@ -227,7 +227,7 @@ def update_name_surname(request):
 		info_type = massive[0]
 
 		try:
-			students = Students.objects.using('katev_full').get( student_id = sid )
+			students = Students.objects.using('katev').get( student_id = sid )
 			if info_type == "name":
 				students.en_name = name_surname
 			else:	
