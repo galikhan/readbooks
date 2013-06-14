@@ -24,7 +24,6 @@ def topics_with_subtopics(user_branch):
 
 	grade_class = SbClass.objects.using('katev').all().order_by("number_view")
 	for grade in grade_class:
-
 		topics = grade.sbtopicslist_set.filter(class_field = grade.id, branch = user_branch).order_by("class_field__number_view", "quarter")
 #		for t in topics:
 #			subtopics = t.sbsubtopicslist_set.filter(topic=t.id)
@@ -92,6 +91,7 @@ def list_topics(request):
 
 	tws = topics_with_subtopics( user_branch )
 	quiz_id, question_num = check_quiz( user )
+	print quiz_id , question_num
 #	tws = []
 	return render(request, "quiz.html",  
 		{ "tws":tws, 
@@ -279,12 +279,13 @@ def load_subtopics(request):
 def gather_questions2( questions, user ):
 
 	data = []
-	values = {}
 	for question in questions:
-
+		values = {}
+		qtype = question.d_q_type.short_name
+		values['id'] = question.id
 		values['question'] = question.question
 		values['solution'] = question.solution
-		qtype = question.d_q_type.short_name
+		values['qtype_name'] = qtype
 		try:
 			rate_object = SbQuestionRating.objects.using('katev').get( question = question ) 	
 			rating = round(float(rate_object.rate_value) / rate_object.rate_amount, 2)
@@ -301,28 +302,31 @@ def gather_questions2( questions, user ):
 			allow_rating=True
 			pass
 		values['allow_rating'] = allow_rating
-		#values['user_comments'] = user_comments
+		values['user_comments'] = [ cm.comment.encode('utf-8') for cm in user_comments ]
 
-		if qtype == 'single_answer' or qtype == 'multiple_answer' or qtype == 'true_false':
+		type_answer = ""
+		if qtype == 'single_answer' or qtype == 'multiple_answer' or qtype == 'true_false' or  qtype == 'classic' or  qtype == 'olympiad':
 			question.meta = 'variants'
 			variants = question.sbvariants_set.all().order_by("id")
 			variant_answers = question.sbanswers_set.all().order_by("view_order")
 
 			meta = 'variants'
-			type_value = variants
-			type_answer = variant_answers
+			type_value = [ v.name.encode('utf-8') for v in variants ]
+			type_answer = [ va.name.encode('utf-8') for va in variant_answers ]
 
 		elif qtype == 'mappings':
 			meta = 'mappings'
-			type_value = question.sbquestionmappings_set.all().order_by("id")
+			mappings = question.sbquestionmappings_set.all().order_by("id")
+			type_value = [ m.key_value.encode('uft-8')+" - "+m.wrong_value.encode('uft-8')+" - "+m.right_value.encode('uft-8') for m in mappings ]
+
 		else:
 			meta = 'other'
 			question.meta = 'other'
 			type_value = ""
 
 		values['meta'] = meta
-		#values['type_value'] = type_value
-		#values['type_answer'] = type_answer
+		values['type_value'] = type_value
+		values['type_answer'] = type_answer
 
 		data.append(values)	
 	return data	
@@ -336,11 +340,11 @@ def load_questions(request):
 		subtopic_id = request.POST['subtopic-id']
 		page_index = request.POST['page-index']
 
-		amount = 3
+		amount = 30
 		questions = SbQuestions.objects.using('katev').filter( d_subtopic_id = subtopic_id )
 		page,pages = paginate(page_index ,questions, amount)
-		questions = gather_questions2(questions, user)
+		questions = gather_questions2(page, user)
 
-	json = simplejson.dumps(questions)	
+	json = simplejson.dumps({"questions":questions, "pages":pages, })	
 	return HttpResponse(json, "application/json")	
 	

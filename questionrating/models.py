@@ -3,6 +3,7 @@ from quiz_generator.models import SbQuestions
 from readbooks.models import TeacherProfile
 import datetime
 
+#SELECT count(*) as cc, question_id, (select round(rate_value/rate_amount,2) from sb_question_rating where question_id = `sb_rated_by`.question_id ) as rate FROM `sb_rated_by` group by question_id having cc > 2
 
 class SbQuestionRating(models.Model):
 	#One to One

@@ -10,233 +10,324 @@
 	<script type="text/javascript" src="{{STATIC_URL}}js/jquery.ui.stars.js" ></script>
 
 	<script type="text/javascript" >
-	$(document).ready(function()
-	{
-		$(".span4").scrollspy();
-		makeMeStar();
-		$("#questions-cart").html("{{question_num}}");
+		$(document).ready(function()
+		{
+			$(".span4").scrollspy();
+			makeMeStar();
+			$("#questions-cart").html("{{question_num}}");
 
-		var url = '{# url "typeahead" #}';
+			var url = '{# url "typeahead" #}';
 
-		$(".typeahead").typeahead({
-			source : function( query, process )
-			{ 
-				setupAjax(0); 
-				var res = $.post(url,{},function(data){
-					suggestions = [];
-					suggestionIds = {};
-					$.each( data, function( index, value )
-					{
-						suggestions[index] = value;
-						suggestionIds[value] = index;
-					});
-					process(suggestions);//["123","12321313"]
-				},"json");
-			},
-			updater:function(item){alert(suggestionIds[item]);},
-			highligthter:function(item){
+			$(".typeahead").typeahead({
+				source : function( query, process )
+				{ 
+					setupAjax(0); 
+					var res = $.post(url,{},function(data){
+						suggestions = [];
+						suggestionIds = {};
+						$.each( data, function( index, value )
+						{
+							suggestions[index] = value;
+							suggestionIds[value] = index;
+						});
+						process(suggestions);//["123","12321313"]
+					},"json");
+				},
+				updater:function(item){alert(suggestionIds[item]);},
+				highligthter:function(item){
 
-			},
-			items : 8,
-			minLength : 1,
+				},
+				items : 8,
+				minLength : 1,
+			});
+
 		});
-
-	});
-		function generateQuiz()
-		{
-			var url = "{% url 'generate_quiz' %}";	
-
-			setupAjax(0);
-			var type = $("#load-quiz-type").val();
-			var quizName = $("#quiz-name").val();
-			var quizId = $("#quiz-id").val();
-
-			if( type=="paper-quiz" )
+			function generateQuiz()
 			{
-				var args = $("#paper-quiz-variants").val();
-			}else if( type=="mve-quiz" )
-			{
-				var args = $("#mve-quiz-variants").val();
-			}else if( type=="online-quiz" )
-			{
-				var args = $("#online-quiz-grade").val();
+				var url = "{% url 'generate_quiz' %}";	
+
+				setupAjax(0);
+				var type = $("#load-quiz-type").val();
+				var quizName = $("#quiz-name").val();
+				var quizId = $("#quiz-id").val();
+
+				if( type=="paper-quiz" )
+				{
+					var args = $("#paper-quiz-variants").val();
+				}else if( type=="mve-quiz" )
+				{
+					var args = $("#mve-quiz-variants").val();
+				}else if( type=="online-quiz" )
+				{
+					var args = $("#online-quiz-grade").val();
+				}
+
+				$.post( url, {"name":quizName, "quiz-id":quizId, "type":type, "args":args }, function(data){
+					$("#questions-cart").html(data.question_num);
+					$("#quiz-id").attr('value', data.quiz_id );
+				}, "json" );
 			}
 
-			$.post( url, {"name":quizName, "quiz-id":quizId, "type":type, "args":args }, function(data){
-				$("#questions-cart").html(data.question_num);
-				$("#quiz-id").attr('value', data.quiz_id );
-			}, "json" );
-		}
+			function createNewQuiz(){
+				var url = "{% url 'create_new_quiz' %}";	
+				setupAjax(0);
+				var quizId = $("#quiz-id").val();
 
-		function createNewQuiz(){
-			var url = "{% url 'create_new_quiz' %}";	
-			setupAjax(0);
-			var quizId = $("#quiz-id").val();
-
-			$.post( url, {"current-quiz-id":quizId}, function(data){
-				$("#questions-cart").html(data.question_num);
-				$("#quiz-id").attr('value', data.quiz_id );
-			}, "json" );
-		}
-		function loadQuizType()
-		{
-			var type = $("#load-quiz-type").val();
-
-			$("#mve-quiz-type").attr("class","inactive-type");
-			$("#online-quiz-type").attr("class","inactive-type");
-			$("#paper-quiz-type").attr("class","inactive-type");
-
-			if( type=="paper-quiz" ){
-				$("#paper-quiz-type").attr("class","active-type");
-			}else if( type=="mve-quiz" ){
-				$("#mve-quiz-type").attr("class","active-type");
-			}else if( type=="online-quiz" ){
-				$("#online-quiz-type").attr("class","active-type");
+				$.post( url, {"current-quiz-id":quizId}, function(data){
+					$("#questions-cart").html(data.question_num);
+					$("#quiz-id").attr('value', data.quiz_id );
+				}, "json" );
 			}
-		}
-		function addRemove(questionId)
-		{
-			var url = "{% url 'addremove' %}";	
-			setupAjax(0);
-			//var addRemove = $("#add-remove-"+questionId).val();
-			var quizId = $("#quiz-id").val();//id of old or new quiz
+			function loadQuizType()
+			{
+				var type = $("#load-quiz-type").val();
 
-			$.post( url, { "quiz-id":quizId,"question-id":questionId }, function(data){
-				//alert(data.quiz_id+" - "+data.question_num);
-				$("#questions-cart").html(data.question_num);
-				$("#quiz-id").attr('value', data.quiz_id );
+				$("#mve-quiz-type").attr("class","inactive-type");
+				$("#online-quiz-type").attr("class","inactive-type");
+				$("#paper-quiz-type").attr("class","inactive-type");
 
-			}, "json" );
-		}
-		function showSubtopics(topicId)
-		{
-			$(".subtopic-"+topicId).css("display","block");
-			var prevTopic = $("#active-topic").val();
-			if ( topicId != prevTopic ){
-				$(".subtopic-"+prevTopic).css("display","none");
+				if( type=="paper-quiz" ){
+					$("#paper-quiz-type").attr("class","active-type");
+				}else if( type=="mve-quiz" ){
+					$("#mve-quiz-type").attr("class","active-type");
+				}else if( type=="online-quiz" ){
+					$("#online-quiz-type").attr("class","active-type");
+				}
+			}
+			function addRemove(questionId)
+			{
+				var url = "{% url 'addremove' %}";	
+				setupAjax(0);
+				//var addRemove = $("#add-remove-"+questionId).val();
+				var quizId = $("#quiz-id").val();//id of old or new quiz
+
+				$.post( url, { "quiz-id":quizId,"question-id":questionId }, 
+					function(data){
+					$("#questions-cart").html(data.question_num);
+					$("#quiz-id").attr('value', data.quiz_id );
+
+				}, "json" );
+			}
+			function showSubtopics(topicId)
+			{
+				$(".subtopic-"+topicId).css("display","block");
+				var prevTopic = $("#active-topic").val();
+				if ( topicId != prevTopic ){
+					$(".subtopic-"+prevTopic).css("display","none");
+				}
+
+				$("#active-topic").attr( "value", topicId );	
+			}
+			function makeMeStar()
+			{
+				$(".rating-stars").children().not(":radio").hide();
+				$(".rating-stars").stars({
+					callback: function(ui, type, value)
+					{
+						//	alert(value);
+						var valId = value.split(":");
+						var ratingValue = valId[0];
+						var qid = valId[1];//id of question
+						//alert("ratingValue : "+ratingValue+" | valid : "+valId)	;
+						var nocomment = 'nocomment';					
+
+						$("#ajax-response-"+qid).html("<label style='font-size:12px;font-style: italic;' >commentsLeave :</label><textarea id='comment-"+qid+"' style='width:340px' ></textarea><button  class='c-button' onclick='sendResult("+ratingValue+", "+qid+", 1)'>save</button>");
+					}
+				 });
+			}
+			function csrfSaveMethod( method ){
+				return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+			}
+			function setupAjax( questionId )
+			{
+				if (questionId == 0){
+					var csrf = $("#csrf").val();
+				}else{
+					var csrf = $("#csrf-"+questionId).val();
+				}
+				$.ajaxSetup({
+					crossdomain : false,
+					beforeSend : function(xhr, settings){
+						if(!csrfSaveMethod(settings.type)){
+							xhr.setRequestHeader("X-CSRFToken", csrf);	
+						}
+					}	
+				});
+			}
+			function sendResult( value, questionId, type )
+			{
+				//disable rating buttons in order to eliminate double click	
+				//$(".c-button").attr("disabled",true);
+				setupAjax(questionId);
+				var comment = $("#comment-"+questionId).val();
+				var url = "{% url "save_rating" %}";
+				var poster = $.post( url , {"type":type, rate: value, "q-id" : questionId, "comment": comment }, 
+					function(data)
+					{
+						if(data.insert){
+
+							//alert(data.comment_whole);
+							$("#ajax-response-"+questionId).html(data.rating);
+							$("#"+questionId).hide();
+							$("#question-comments-"+questionId).append(data.comment_whole);
+						}
+					},"json");
+				poster.done(function(){ /*  enable rating buttons */$(".c-button").attr("disabled",false); });
+
+			}
+			function deleteComment(id)
+			{
+				if(confirm('Delete this comment ?')){	
+					$.post("../rating/manage_comment.php", {"id":id},	 
+					function(data){
+						if(data == true){	
+							$("#comment-"+id).hide();
+						}else {
+							alert("Problems on server,Cant delete row!"); 
+						} 
+					}, "json");
+				}
 			}
 
-			$("#active-topic").attr( "value", topicId );	
+		function loadSubtopics(topicId)
+		{
+			setupAjax(0);
+			var url = "{% url 'load_subtopics' %}";
+			var poster = $.post( url ,
+			{ "topic-id":topicId }, 
+			function(data)
+			{
+				if (data.length > 0)
+				{
+					html = "<ul>";
+					$.each( data, function(index, value)
+					{
+						link = "<a href='javascript:void(0)' onclick=loadQuestions("+topicId+","+value.id+",1)>"+value.name+"</a>";
+						html = html + "<li>"+link+" {"+value.num+"}</li>";		
+					});	
+					html += "</ul>";
+					$("#subtopic-"+topicId).html(html);
+				}else{
+					$("#subtopic-"+topicId).html("There is no subtopics.");
+				}	
+			},"json");
+			poster.done(function(){ /*  enable rating buttons */$(".c-button").attr("disabled",false); });
 		}
+
+		function loadQuestions(topicId, subtopicId, index)
+		{
+			setupAjax(0);
+			var url = "{% url 'load_questions' %}";
+			var poster = $.post( url ,
+			{ "topic-id":topicId, "subtopic-id":subtopicId, "page-index":index  }, 
+			function(data)
+			{
+				if (data.questions.length > 0)
+				{
+					html = "<ul>";
+					$.each( data.questions, function(index, value)
+					{
+						link = value.question;
+						html += "type:"+value.qtype_name+"<br>";
+						html +="Question:"+link;
+						subhtml = "";
+						if (value.meta == 'variants') {
+							subhtml+="Variants:<br>";
+							$.each(value.type_value, function(vi, vdata){
+								subhtml += (vi+1)+") "+vdata+"<hr>";
+							});
+
+						    subhtml+="Answers:<br>";
+							$.each(value.type_answer, function(ai, adata){
+								subhtml += (ai+1)+") "+adata+"<hr>";
+							});
+
+						}else if( value.meta == 'mappings') 
+						{
+							subhtml+="Mappings:<br>";
+							$.each(value.type_value, function(mi, mdata){
+								subhtml += (mi+1)+") "+mdata.key_value+"-"+mdata.wrong_value+"-"+mdata.right_value+"<hr>";
+							});
+						} else {
+							subhtml += "Solution:"+value.solution+"<br>";
+							subhtml += "Answer:"+value.answer+"<br>";
+						}
+
+						subhtml+="Comments:<br>";
+						$.each(value.user_comments, function(ci, cdata){
+							subhtml += (ci+1)+") "+cdata+"<br>";
+						});
+						html +=subhtml;
+						html +="Rating value:"+value.rating+"<br>";
+						qid = value.id;
+						if (value.allow_rating){
+							html +=ratingStars(qid)+"<br>";
+						}
+						html +="<button class='btn' onclick='addRemove("+qid+")'>add</button><hr>";
+
+					});	
+					html += "</ul>";
+					$("#questions").html(html);
+
+					pages = data.pages.length;
+					pHtml = "<ul>";
+					for(var i=0; i< pages; i++)
+					{
+						id = data.pages[i];
+						pHtml+="<li><a href='javascript:void(0);' onclick ='loadQuestions("+topicId+","+subtopicId+","+id+" )'>"+id+"</a></li>";
+					}
+					pHtml += "</ul>";
+					$(".pagination").html(pHtml);
+					makeMeStar();
+				}else{
+					$("#questions").html("There is no subtopics.");
+				}	
+			},"json");
+			poster.done(function(){ /*  enable rating buttons */$(".c-button").attr("disabled",false); });
+
+		}
+		function ratingStars(qid)
+		{
+			star = "<div id='rating-stuff-"+qid+"' ><form class='rating-stars' id ="+qid+" ><input type='radio' name='rate-"+qid+"' value='1' title='Poor' id='' /><input type='radio' name='rate-"+qid+"' value='2' title='Fair' id='' /><input type='radio' name='rate-"+qid+"' value='3' title='Average' id='' /><input type='radio' name='rate-"+qid+"' value='4' title='Good' id='' /><input type='radio' name='rate-"+qid+"' value='5' title='Excellent' id='' /><input type = 'hidden' value='5' id='max_value' /></form>";
+
+			comment = "<div id='ajax-response-"+qid+"'></div></div>";
+
+			return star+comment;
+		}
+
 		function makeMeStar()
 		{
 			$(".rating-stars").children().not(":radio").hide();
 			$(".rating-stars").stars({
 				callback: function(ui, type, value)
 				{
-					//	alert(value);
 					var valId = value.split(":");
 					var ratingValue = valId[0];
 					var qid = valId[1];//id of question
-					//alert("ratingValue : "+ratingValue+" | valid : "+valId)	;
 					var nocomment = 'nocomment';					
-
-					$("#ajax-response-"+qid).html("<label style='font-size:12px;font-style: italic;' >commentsLeave :</label><textarea id='comment-"+qid+"' style='width:340px' ></textarea><button  class='c-button' onclick='sendResult("+ratingValue+", "+qid+", 1)'>save</button>");
+					var commentsLeave = "Leave Comment";
+					var commentsSkip  = $("#comments-skip").val();
+					$("#ajax-response-"+qid).html("<label style='font-size:12px;font-style: italic;' >"+commentsLeave+":</label><textarea id='comment' style='width:340px;height: 24px;' ></textarea><button  class='btn' onclick='sendResult("+ratingValue+", "+qid+", 1)'>ok</button>");
 				}
 			 });
-		}
-		function csrfSaveMethod( method ){
-			return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-		}
-		function setupAjax( questionId )
+		}	
+		function sendResult(rateValue, qid, type)
 		{
-			if (questionId == 0){
-				var csrf = $("#csrf").val();
-			}else{
-				var csrf = $("#csrf-"+questionId).val();
-			}
-			$.ajaxSetup({
-				crossdomain : false,
-				beforeSend : function(xhr, settings){
-					if(!csrfSaveMethod(settings.type)){
-						xhr.setRequestHeader("X-CSRFToken", csrf);	
-					}
-				}	
-			});
-		}
-		function sendResult( value, questionId, type )
-		{
-			//disable rating buttons in order to eliminate double click	
-			//$(".c-button").attr("disabled",true);
-			setupAjax(questionId);
-			var comment = $("#comment-"+questionId).val();
-			var url = "{% url "save_rating" %}";
-			var poster = $.post( url , {"type":type, rate: value, "q-id" : questionId, "comment": comment }, 
-				function(data)
-				{
-					if(data.insert){
+			setupAjax(0);
+			var url = "{% url 'save_rating' %}";
 
-						//alert(data.comment_whole);
-						$("#ajax-response-"+questionId).html(data.rating);
-						$("#"+questionId).hide();
-						$("#question-comments-"+questionId).append(data.comment_whole);
-					}
-				},"json");
-			poster.done(function(){ /*  enable rating buttons */$(".c-button").attr("disabled",false); });
-
-		}
-		function deleteComment(id)
-		{
-			if(confirm('Delete this comment ?')){	
-				$.post("../rating/manage_comment.php", {"id":id},	 
-				function(data){
-					if(data == true){	
-						$("#comment-"+id).hide();
-					}else {
-						alert("Problems on server,Cant delete row!"); 
-					} 
-				}, "json");
-			}
-		}
-
-	function loadSubtopics(topicId)
-	{
-		setupAjax(0);
-		var url = "{% url 'load_subtopics' %}";
-		var poster = $.post( url ,
-		{ "topic-id":topicId }, 
-		function(data)
-		{
-			if (data.length > 0)
+			comment = $("#comment").val();
+			var poster = $.post( url ,
+			{ "qid":qid, "rate":rateValue, "type":type, "comment":comment }, 
+			function(data)
 			{
-				html = "<ul>";
-				$.each( data, function(index, value)
-				{
-					link = "<a href='javascript:void(0)' onclick=loadQuestions("+topicId+","+value.id+")>"+value.name+"</a>";
-					html = html + "<li>"+link+" {"+value.num+"}</li>";		
-				});	
-				html += "</ul>";
-				$("#subtopic-"+topicId).html(html);
-			}else{
-				$("#subtopic-"+topicId).html("There is no subtopics.");
-			}	
-		},"json");
-		poster.done(function(){ /*  enable rating buttons */$(".c-button").attr("disabled",false); });
-	}
-	function loadQuestions(topicId, subtopicId)
-	{
-		setupAjax(0);
-		var url = "{% url 'load_questions' %}";
-		var poster = $.post( url ,
-		{ "topic-id":topicId, "subtopic-id":subtopicId, "page-index":1,  }, 
-		function(data)
-		{
-			if (data.length > 0)
-			{
-				html = "<ul>";
-				$.each( data, function(index, value)
-				{
-					link = value.question;
-					html = html + "<li>"+link+"</li>";		
-				});	
-				html += "</ul>";
-				$("#questions").html(html);
-			}else{
-				$("#questions").html("There is no subtopics.");
-			}	
-		},"json");
-		poster.done(function(){ /*  enable rating buttons */$(".c-button").attr("disabled",false); });
-	}
+				html = "Rating:"+data.rating+"<br>";
+				html += "Comment:"+data.comment_whole+"<br>";
+				$("#rating-stuff-"+qid).html(html);
+
+			},"json");
+			poster.done(function(){ $(".c-button").attr("disabled",false); });
+		}
 	</script>
 	<style type="text/css">
 	.subtopics-list{
@@ -255,13 +346,12 @@
 	</style>
 {% endblock %}
 {% block "body" %}
-<a href="{% url 'list_topics' %}" >Questions</a>
-<hr>
 <!--<input type="text" class="typeahead" data-provide="typeahead" autocomplete="off" />
 -->
 <input type="hidden" id="quiz-id" value="{{ quiz_id }}" />
 
 <div class="row">
+	<h1>{{quiz_id}}--{{question_num}}</h1>
 	<input type="hidden" id = "csrf" value="{{ csrf_token }}" />
 	<input type="hidden" id = "active-topic" value="0" />
 	<div class="span4" style="overflow:scroll"> 
@@ -275,82 +365,8 @@
 	</div>
 
 	<div class="span6">
-		<div id="questions"></div>
-		<p>{{ questions|length }} - questions</p>
-		{% for question in questions %}
-			Type: {{ question.d_q_type.short_name }}<br>
-			Question:{{ question.question|safe }}
-
-			{% if question.meta == 'variants' %}
-				Variants:<br>
-				{%  for variant in question.variants %}
-					{{forloop.counter}}-{{ variant.name|safe }}
-					<hr>
-				{% endfor %}	
-				Answers:<br>
-				{%  for answer in question.variant_answers %}
-					{{ answer.view_order|safe }}){{ answer.name|safe }}<br>
-				{% endfor %}	
-				<br>
-			{% elif question.meta == 'mappings' %}
-				Mappings:<br>
-				{%  for mappings in question.mappings %}
-					{{ mappings.ket_value|safe }}&nbsp;&nbsp;
-					{{ mappings.wrong_value|safe }}&nbsp;&nbsp;
-					{{ mappings.right_value|safe }}<br>
-				{% endfor %}	
-			{% else %}	
-				Solution:{{ question.solution }}<br>
-				Answer:{{ question.answer }}<br>
-			{% endif %}
-			</br>
-				<input type ="button" class ="btn" onclick="addRemove({{question.id}})" value="add" id="add-remove-{{ question.id }}" />
-				<br>
-				{% if question.allow_rating %}
-				<div  class="pageBody">
-					<div>
-					<form class="rating-stars" id="{{question.id}}" method="post">
-						<input type="hidden" id = "csrf-{{question.id}}" value="{{ csrf_token }}" />
-
-	 					<input type="radio" name="rate" value="1" title="Poor" id="rate1" /> 
-							<label for="rate1">Poor</label><br />
-						<input type="radio" name="rate" value="2" title="Fair" id="rate2" /> 
-							<label for="rate2">Fair</label><br />
-						<input type="radio" name="rate" value="3" title="Average" id="rate3" /> 
-							<label for="rate3">Average</label><br />
-						<input type="radio" name="rate" value="4" title="Good" id="rate4" /> 
-							<label for="rate4">Good</label><br />
-						<input type="radio" name="rate" value="5" title="Excellent" id="rate5" /> 
-							<label for="rate5">Excellent</label><br />
-						<input type = "hidden" value="5" id="max_value" />
-					</form>
-					</div>
-				</br>
-					<label>Rating:</label>
-					<div id='ajax-response-{{question.id}}' style='width:160px;'>Not rated.</div>
-				</div>
-					{% else %}
-					<label>Rating:</label>{{ question.rating }}
-				{% endif %}
-				<div id="question-comments-{{question.id}}">
-					<label>Comments:</label>
-					{% for comment in question.user_comments %}
-						<p>{{comment.comment}}</p>
-					{% endfor %}
-				</div>
-			</br>
-		{% endfor %}
-		<div class="pagination">
-			<ul>
-			{% for page in pages %}
-				{% ifequal forloop.counter index %}
-					<li class="active" ><a href={% url "list_questions_by_page" topic_id subtopic_id page %}> {{page}}</a></li>
-				{% else %}
-					<li><a href={% url "list_questions_by_page" topic_id subtopic_id page %}> {{page}}</a></li>
-				{% endifequal %}
-			{% endfor %}
-			</ul>
-		</div>
+		<div id="questions">Select questions</div>
+		<div class="pagination"></div>
 	</div>
 
 	<div class="span2">
@@ -403,5 +419,14 @@
 			</div>
 		</div>
 	</div>
+</div>
+
+<div class='rating-stars'>
+	<input type='radio' name='rate1' value='1' title='Poor' />
+	<input type='radio' name='rate1' value='2' title='Fair'  />
+	<input type='radio' name='rate1' value='3' title='Average'  />
+	<input type='radio' name='rate1' value='4' title='Good'  />
+	<input type='radio' name='rate1' value='5' title='Excellent'  />
+	<input type = 'hidden' value='5' id='max_value' />
 </div>
 {% endblock %}

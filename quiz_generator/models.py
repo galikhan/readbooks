@@ -6,7 +6,7 @@ class QuizList(models.Model):
     name = models.CharField( max_length = 255 )
     number_of_questions = models.IntegerField(default=0)
     user = models.IntegerField()
-    create_date = models.DateTimeField( default=datetime.datetime.now() )
+    create_date = models.DateTimeField()
     #time when user finished quiz added all quistions fully
     #set at the end
 
