@@ -2,6 +2,7 @@
 {% block "head" %}
 	{{  block.super }}
 	<script type="text/javascript" >
+	    var loader = "<img src ={{STATIC_URL}}loaders/throbber.gif />";
 		function csrfSaveMethod( method )
 		{
 			return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
@@ -74,6 +75,8 @@
 			var level = $("#"+studentId).val();
 			//student id, level, type
 
+			$("#loader-"+studentId).html(loader);	
+			//alert(loader);
 			var url = "{% url 'set_level' %}";
 			$.post( url, {"student-id":studentId ,"level": level,"type": type },
 				function(data)
@@ -94,6 +97,15 @@
 	</script>
 {% endblock %}
 {% block "body" %}
+<br>
+		<div class="alert alert-error" style="width:800px">Please read following text!
+		<br>
+		<strong style="color:black">1. Check student name and surname for mistakes. Name written by turkish letter will not be shown,  You can edit name or surname by clicking <i class="icon-edit"></i>&nbsp;icon.<br>
+		2. Set student`s language level(<em>advanced, upperintermediate.. </em>) for english and for turkish.<br>
+		3. Student whose language level(<em>for english and turkish</em>) not set, will not be printed.
+		</strong><br>
+		</div>
+
 		<input type="hidden" id="csrf" value={{csrf_token}} />
 		<input type="hidden" id="language-type" value={{ type }} />
 		{% ifequal type "english" %}

@@ -7,14 +7,16 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 import datetime, simplejson, readbooks.settings as settings
 from django.contrib.auth.decorators import login_required
-
+import readbooks.settings as s
 
 @login_required
 def cert_list( request, school ):
 	cl = CertificateLinks.objects.filter(school=school)
+	school = school_id_converter(school)	
 	lessons = ["computer", "english", "turkish"]
+#	return HttpResponse(s.HOME_PATH)
 
-	return render(request, "download.html", {"certificates":cl, "lessons":lessons})
+	return render(request, "download.html", {"certificates":cl, "lessons":lessons, "school":school} )
 
 @login_required
 def list_computer(request):
@@ -24,7 +26,7 @@ def list_computer(request):
 	students = Students.objects.using('katev').filter( school_id = school, class_field = 11 )
 	lessons = ["computer", "english", "turkish"]
 
-	return render(request, "studentlist.html",{ "students": students , "lessons": lessons, "type":"computer" })
+	return render(request, "studentlist.html",{ "students": students , "lessons": lessons, "type":"computer","school":school })
 
 @login_required
 def list_english(request):
@@ -44,7 +46,7 @@ def list_english(request):
 			pass	
 
 	lessons = ["computer", "english", "turkish"]
-	return render(request, "studentlist.html",{ "students": students , "lessons": lessons, "type":"english", "level":level,"certified":certified })
+	return render(request, "studentlist.html",{ "students": students , "lessons": lessons, "type":"english", "level":level,"certified":certified,"school":school })
 
 @login_required
 def list_turkish(request):
@@ -65,7 +67,7 @@ def list_turkish(request):
 			pass	
 
 	lessons = ["computer", "english", "turkish"]
-	return render(request, "studentlist.html",{ "students": students , "lessons": lessons, "type":"turkish" , "level":level,"certified":certified })
+	return render(request, "studentlist.html",{ "students": students , "lessons": lessons, "type":"turkish" , "level":level,"certified":certified ,"school":school})
 
 
 def set_level(request):
@@ -232,7 +234,6 @@ def update_name_surname(request):
 				students.en_name = name_surname
 			else:	
 				students.en_surname = name_surname
-			students.save()	
 		except Students.DoesNotExist:
 			pass	
 
