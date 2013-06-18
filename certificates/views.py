@@ -108,7 +108,6 @@ def print_computer(request):
 	school = school_id_converter(school)	
 	date = str(datetime.datetime.now().date())
 	name = "computer-"+school+"-"+date+".pdf"
-	homepath = "/home/galikhan/www/readbooks/certificates"
 
 	students = Students.objects.using('katev').filter( school_id = school, class_field = 11 )
 	path = settings.MEDIA_ROOT+"certificates/"+name
@@ -117,7 +116,7 @@ def print_computer(request):
 
 	for student in students:
 		full_name = str(student.en_name.encode("utf8") +" "+ student.en_surname.encode("utf8"))
-		c.drawImage( homepath + "/images/computer.jpg",0,0, heigth, width)
+		c.drawImage( settings.HOME_PATH + "/images/computer.jpg",0,0, heigth, width)
 		c.drawString(320, 338, full_name)
 		c.drawString(85, 453, str(student.student_id)+"1")
 		c.drawString(85, 438, date)
@@ -135,7 +134,6 @@ def print_turkish(request):
 	date = str(datetime.datetime.now().date())
 
 	name = "tukish-"+school+"-"+date+".pdf"
-	homepath = "/home/galikhan/www/readbooks/certificates"
 
 	students = Students.objects.using('katev').filter( school_id = school, class_field = 11 )
 	studentid = []
@@ -157,7 +155,7 @@ def print_turkish(request):
 			level_cerficate = str(student_levels[student.student_id]).lower()
 			full_name = str(student.en_name.encode("utf8") +" "+ student.en_surname.encode("utf8"))
 			cert_name = "/images/"+level_cerficate+".jpg"
-			c.drawImage( homepath + cert_name,0,0, heigth, width)
+			c.drawImage( settings.HOME_PATH + cert_name,0,0, heigth, width)
 			c.drawString(250, 340, full_name)
 			c.drawString(85, 453, str(student.student_id)+"3")
 			c.drawString(85, 438, date)
@@ -178,7 +176,7 @@ def print_english(request):
 	date = str(datetime.datetime.now().date())
 
 	name = "english-"+school+"-"+date+".pdf"
-	homepath = "/home/galikhan/www/readbooks/certificates"
+
 
 	students = Students.objects.using('katev').filter( school_id = school, class_field = 11 )
 	studentid = []
@@ -201,7 +199,7 @@ def print_english(request):
 			level_cerficate = str(student_levels[student.student_id]).lower()
 			full_name = student.en_name.encode("utf8") +" "+ student.en_surname.encode("utf8")
 			cert_name = "/images/"+level_cerficate+".jpg"
-			c.drawImage( homepath + cert_name,0,0, heigth, width)
+			c.drawImage( settings.HOME_PATH + cert_name,0,0, heigth, width)
 			c.setFont('Vera', 25)
 			c.drawString(300, 340, full_name)
 			c.setFont('Vera', 20)
