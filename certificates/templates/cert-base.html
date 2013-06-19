@@ -14,11 +14,15 @@
 		<div class="navbar">
 			<div class ="navbar-inner">
 				<ul class="nav">
-					{% for lesson in lessons %}
+				{% for lesson in lessons %}
+					{% if type == lesson %}
+						<li  class="active"><a href={% url lesson %}>{{ lesson }}</a></li>
+					{% else %}	
 						<li><a href={% url lesson %} >{{ lesson }}</a></li>
-					{% endfor %}
-					<li><a href={% url "cert_list" school %}>download</a></li>
-					<li><a href={% url "logout" %}>logout</a></li>
+					{% endif %}
+				{% endfor %}
+				<li><a href={% url "cert_list" school %}>download</a></li>
+				<li><a href={% url "logout" %}>logout</a></li>
 				</ul>
 			</div>
 		</div>	

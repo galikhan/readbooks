@@ -104,9 +104,11 @@ def set_level(request):
 @login_required
 def print_computer(request):
 
+	cert_number = "19-1/201-"
 	school = request.session.__getitem__("school")
 	school = school_id_converter(school)	
-	date = str(datetime.datetime.now().date())
+#	date = str(datetime.datetime.now().date())
+	date ="2013-05-25"
 	name = "computer-"+school+"-"+date+".pdf"
 
 	students = Students.objects.using('katev').filter( school_id = school, class_field = 11 )
@@ -116,9 +118,15 @@ def print_computer(request):
 
 	for student in students:
 		full_name = str(student.en_name.encode("utf8") +" "+ student.en_surname.encode("utf8"))
-		c.drawImage( settings.HOME_PATH + "/images/computer.jpg",0,0, heigth, width)
-		c.drawString(320, 338, full_name)
-		c.drawString(85, 453, str(student.student_id)+"1")
+		c.drawImage( settings.HOME_PATH + "/certificates/images/computer.jpg",0,0, heigth, width)
+		c.setFont('Times-Roman', 16)
+		namelen = len(full_name)
+		font = adjust_font(namelen)		
+		c.setFont('Times-Roman', font)
+		c.drawCentredString(400, 338, full_name)
+#		c.drawString(320, 338, full_name)
+		c.setFont('Times-Roman', 12)
+		c.drawString(85, 453, cert_number+str(student.student_id)+"1c")
 		c.drawString(85, 438, date)
 		c.showPage()
 	c.save()	
@@ -129,9 +137,11 @@ def print_computer(request):
 @login_required
 def print_turkish(request):
 
+	cert_number = "19-1/201-"
 	school = request.session.__getitem__("school")
 	school = school_id_converter(school)	
-	date = str(datetime.datetime.now().date())
+	#date = str(datetime.datetime.now().date())
+	date ="2013-05-25"
 
 	name = "tukish-"+school+"-"+date+".pdf"
 
@@ -154,10 +164,17 @@ def print_turkish(request):
 		try:
 			level_cerficate = str(student_levels[student.student_id]).lower()
 			full_name = str(student.en_name.encode("utf8") +" "+ student.en_surname.encode("utf8"))
-			cert_name = "/images/"+level_cerficate+".jpg"
+			cert_name = "/certificates/images/"+level_cerficate+".jpg"
 			c.drawImage( settings.HOME_PATH + cert_name,0,0, heigth, width)
-			c.drawString(250, 340, full_name)
-			c.drawString(85, 453, str(student.student_id)+"3")
+			c.setFont('Times-Roman', 16)
+			namelen = len(full_name)
+			font = adjust_font(namelen)
+
+			c.setFont('Times-Roman', font)
+			c.drawCentredString(350, 340, full_name)
+			#c.drawString(250, 340, full_name)
+			c.setFont('Times-Roman', 12)
+			c.drawString(85, 453, cert_number+str(student.student_id)+"3c")
 			c.drawString(85, 438, date)
 			c.showPage()
 		except KeyError:
@@ -171,13 +188,13 @@ def print_turkish(request):
 @login_required
 def print_english(request):
 
+	cert_number = "19-1/201-"
 	school = request.session.__getitem__("school")
 	school = school_id_converter(school)	
-	date = str(datetime.datetime.now().date())
+#	date = str(datetime.datetime.now().date())
+	date ="2013-05-25"
 
 	name = "english-"+school+"-"+date+".pdf"
-
-
 	students = Students.objects.using('katev').filter( school_id = school, class_field = 11 )
 	studentid = []
 	for student in students:
@@ -186,25 +203,34 @@ def print_english(request):
 	slevels = EnglishCertificates.objects.filter(student__in = studentid)
 	student_levels = {}
 
-
+	certified_students = []
 	for slevel in slevels:
+		certified_students.append(slevel.student)
 		student_levels[slevel.student] = slevel.level.name
 
 	path = settings.MEDIA_ROOT+"certificates/"+name
 	c = canvas.Canvas( path, pagesize = A4 )
 	heigth, width = A4
 
-	for student in students:
+	last_students = students.filter(student_id__in=certified_students)
+#	print certified_students," and s count = ",scount
+	for student in last_students:
 		try:
 			level_cerficate = str(student_levels[student.student_id]).lower()
 			full_name = student.en_name.encode("utf8") +" "+ student.en_surname.encode("utf8")
-			cert_name = "/images/"+level_cerficate+".jpg"
+			cert_name = "/certificates/images/"+level_cerficate+".jpg"
 			c.drawImage( settings.HOME_PATH + cert_name,0,0, heigth, width)
-			c.setFont('Vera', 25)
-			c.drawString(300, 340, full_name)
-			c.setFont('Vera', 20)
-			c.drawString(85, 453, str(student.student_id)+"2")
+			c.setFont('Times-Roman', 16)
+#			c.drawString(300, 340, full_name)
+			namelen = len(full_name)
+			font = adjust_font(namelen)
+			c.setFont('Times-Roman', font)
+			c.drawCentredString(400, 340, full_name)
+
+			c.setFont('Times-Roman', 12)
+			c.drawString(85, 453, cert_number+str(student.student_id)+"2c")
 			c.drawString(85, 438, date)
+
 			c.showPage()
 		except KeyError:
 			pass
@@ -232,6 +258,7 @@ def update_name_surname(request):
 				students.en_name = name_surname
 			else:	
 				students.en_surname = name_surname
+			students.save()
 		except Students.DoesNotExist:
 			pass	
 
@@ -242,6 +269,7 @@ def save_link(school, name, cert_type):
 
 	try:
 		cl = CertificateLinks.objects.get( school = school, certificate_type = cert_type)
+		cl.name = name
 	except CertificateLinks.DoesNotExist:	
 		cl = CertificateLinks()
 		cl.school = school
@@ -261,3 +289,17 @@ def school_id_converter(school_id):
 		school_id = "0"+school_id
 
 	return school_id		
+
+def	adjust_font(namelen):
+	font = 16
+	if namelen > 25 and namelen <= 30: #max len 50
+		font = 14
+	elif  namelen > 30 and namelen <= 35: 
+		font = 13
+	elif  namelen > 35 and namelen <= 40: 
+		font = 12
+	elif  namelen > 40 and namelen <= 52: 
+		font = 10	
+	return font	
+
+
