@@ -109,13 +109,13 @@
 		<input type="hidden" id="csrf" value={{csrf_token}} />
 		<input type="hidden" id="language-type" value={{ type }} />
 		{% ifequal type "english" %}
-			<a href={% url "printen" %} class="btn" >Print (<span id="english-certified">{{certified}}</span>)</a>
+			<a href={% url "printen" %} class="btn" >Generate Certificates (<span id="english-certified">{{certified}}</span>)</a>
 		{% endifequal %}
 		{% ifequal type "turkish" %}
-			<a href={% url "printtr" %} class="btn" >Print (<span id="turkish-certified">{{certified}}</span>)</a>
+			<a href={% url "printtr" %} class="btn" >Generate Certificates (<span id="turkish-certified">{{certified}}</span>)</a>
 		{% endifequal %}
 		{% ifequal type "computer" %}
-			<a href={% url "printcmp" %} class="btn" >Print ({{ students|length }})</a>
+			<a href={% url "printcmp" %} class="btn" >Generate Certificates ({{ students|length }})</a>
 		{% endifequal %}
 		<br>
 		<br>
